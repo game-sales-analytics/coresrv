@@ -1,0 +1,189 @@
+syntax = "proto3";
+
+package coresrv;
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "GSA.Services";
+
+service CoreService {
+  rpc BulkStoreGameSales(BulkStoreGameSalesRequest)
+      returns (BulkStoreGameSalesReply);
+  rpc GetGameSalesByRank(GetGameSalesByRankRequest)
+      returns (GetGameSalesByRankReply);
+  rpc SearchGameSalesByName(SearchGameSalesByNameRequest)
+      returns (SearchGameSalesByNameReply);
+  rpc GetTopNGamesInPlatforms(GetTopNGamesInPlatformsRequest)
+      returns (GetTopNGamesInPlatformsReply);
+  rpc GetTopNGamesInYear(GetTopNGamesInYearRequest)
+      returns (GetTopNGamesInYearReply);
+  rpc GetTopNGamesInGenre(GetTopNGamesInGenreRequest)
+      returns (GetTopNGamesInGenreReply);
+  rpc Get5MostSoldGamesByYearAndPlatform(
+      Get5MostSoldGamesByYearAndPlatformRequest)
+      returns (Get5MostSoldGamesByYearAndPlatformReply);
+  rpc GetMoreEUSoldThanNAGames(GetMoreEUSoldThanNAGamesRequest)
+      returns (GetMoreEUSoldThanNAGamesReply);
+  rpc GetGameSalesById(GetGameSalesByIdRequest) returns (GetGameSalesByIdReply);
+  rpc GetYearlyTotalGameSalesInRange(GetYearlyTotalGameSalesInRangeRequest)
+      returns (GetYearlyTotalGameSalesInRangeReply);
+  rpc GetTotalPublisherGameSalesInYearsRange(
+      GetTotalPublisherGameSalesInYearsRangeRequest)
+      returns (GetTotalPublisherGameSalesInYearsRangeReply);
+  rpc GetTotalGameSalesInYearsRangeByGenre(
+      GetTotalGameSalesInYearsRangeRequestByGenreRequest)
+      returns (GetTotalGameSalesInYearsRangeRequestByGenreReply);
+}
+
+message GameSale {
+  string id = 1;
+  google.protobuf.Timestamp registered_at = 2;
+  uint64 rank = 3;
+  string name = 4;
+  string platform = 5;
+  uint32 year = 6;
+  string genre = 7;
+  string publisher = 8;
+  float na_sales = 9;
+  float eu_sales = 10;
+  float jp_sales = 11;
+  float other_sales = 12;
+  float global_sales = 13;
+}
+
+message BulkStoreGameSalesRequest {
+  message GameSale {
+    uint64 rank = 1;
+    string name = 2;
+    string platform = 3;
+    uint32 year = 4;
+    string genre = 5;
+    string publisher = 6;
+    float na_sales = 7;
+    float eu_sales = 8;
+    float jp_sales = 9;
+    float other_sales = 10;
+    float global_sales = 11;
+  }
+
+  repeated GameSale items = 1;
+}
+
+message BulkStoreGameSalesReply {
+  repeated GameSale items = 1;
+}
+
+message GetGameSalesByRankRequest {
+  uint64 rank = 1;
+}
+
+message GetGameSalesByRankReply {
+  GameSale game_sale = 1;
+}
+
+message SearchGameSalesByNameRequest {
+  string name = 1;
+}
+
+message SearchGameSalesByNameReply {
+  repeated GameSale items = 1;
+}
+
+message GetTopNGamesInPlatformsRequest {
+  uint64 n = 1;
+}
+
+message GetTopNGamesInPlatformsReply {
+  message GameSales {
+    repeated GameSale items = 1;
+  }
+  map<string, GameSales> group = 1;
+}
+
+message GetTopNGamesInYearRequest {
+  uint64 n = 1;
+}
+
+message GetTopNGamesInYearReply {
+  message GameSales {
+    repeated GameSale items = 1;
+  }
+  map<string, GameSales> group = 1;
+}
+
+message GetTopNGamesInGenreRequest {
+  uint64 n = 1;
+}
+
+message GetTopNGamesInGenreReply {
+  message GameSales {
+    repeated GameSale items = 1;
+  }
+  map<string, GameSales> group = 1;
+}
+
+message Get5MostSoldGamesByYearAndPlatformRequest {
+  uint32 year = 1;
+  string platform = 2;
+}
+
+message Get5MostSoldGamesByYearAndPlatformReply {
+  repeated GameSale items = 1;
+}
+
+message GetMoreEUSoldThanNAGamesRequest {
+}
+
+message GetMoreEUSoldThanNAGamesReply {
+  repeated GameSale items = 1;
+}
+
+message GetGameSalesByIdRequest {
+  string id = 1;
+}
+
+message GetGameSalesByIdReply {
+  GameSale game_sale = 1;
+}
+
+message GetYearlyTotalGameSalesInRangeRequest {
+  uint32 start_year = 1;
+  uint32 end_year = 2;
+}
+
+message GetYearlyTotalGameSalesInRangeReply {
+  message TotalYearGameSales {
+    uint32 year = 1;
+    float total_game_sales = 2;
+  }
+
+  repeated TotalYearGameSales items = 1;
+}
+
+message GetTotalPublisherGameSalesInYearsRangeRequest {
+  string publisher_id = 1;
+  uint32 start_year = 2;
+  uint32 end_year = 3;
+}
+
+message GetTotalPublisherGameSalesInYearsRangeReply {
+  string publisher_id = 1;
+  message TotalYearGameSales {
+    uint32 year = 1;
+    float total_game_sales = 2;
+  }
+  repeated TotalYearGameSales items = 2;
+}
+
+message GetTotalGameSalesInYearsRangeRequestByGenreRequest {
+  uint32 start_year = 1;
+  uint32 end_year = 2;
+}
+
+message GetTotalGameSalesInYearsRangeRequestByGenreReply {
+  message TotalGenreGameSales {
+    string genre = 1;
+    float total_game_sales = 2;
+  }
+  repeated TotalGenreGameSales items = 1;
+}
