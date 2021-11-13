@@ -13,23 +13,24 @@ service CoreService {
       returns (GetGameSalesByRankReply);
   rpc SearchGameSalesByName(SearchGameSalesByNameRequest)
       returns (SearchGameSalesByNameReply);
-  rpc GetTopNGamesInPlatforms(GetTopNGamesInPlatformsRequest)
-      returns (GetTopNGamesInPlatformsReply);
-  rpc GetTopNGamesInYear(GetTopNGamesInYearRequest)
-      returns (GetTopNGamesInYearReply);
-  rpc GetTopNGamesInGenre(GetTopNGamesInGenreRequest)
-      returns (GetTopNGamesInGenreReply);
+  rpc GetTopNGamesOfPlatforms(GetTopNGamesOfPlatformsRequest)
+      returns (GetTopNGamesOfPlatformsReply);
+  rpc GetTopNGamesOfYear(GetTopNGamesOfYearRequest)
+      returns (GetTopNGamesOfYearReply);
+  rpc GetTopNGamesOfGenre(GetTopNGamesOfGenreRequest)
+      returns (GetTopNGamesOfGenreReply);
   rpc Get5MostSoldGamesByYearAndPlatform(
       Get5MostSoldGamesByYearAndPlatformRequest)
       returns (Get5MostSoldGamesByYearAndPlatformReply);
-  rpc GetMoreEUSoldThanNAGames(GetMoreEUSoldThanNAGamesRequest)
-      returns (GetMoreEUSoldThanNAGamesReply);
-  rpc GetGameSalesById(GetGameSalesByIdRequest) returns (GetGameSalesByIdReply);
+  rpc GetGameSalesWithMoreSalesInEUThanNA(
+      GetGameSalesWithMoreSalesInEUThanNARequest)
+      returns (GetGameSalesWithMoreSalesInEUThanNAReply);
+  rpc GetGameSalesInIds(GetGameSalesInIdsRequest) returns (GetGameSalesInIdsReply);
   rpc GetYearlyTotalGameSalesInRange(GetYearlyTotalGameSalesInRangeRequest)
       returns (GetYearlyTotalGameSalesInRangeReply);
-  rpc GetTotalPublisherGameSalesInYearsRange(
-      GetTotalPublisherGameSalesInYearsRangeRequest)
-      returns (GetTotalPublisherGameSalesInYearsRangeReply);
+  rpc GetTotalPublishersGameSalesInYearsRange(
+      GetTotalPublishersGameSalesInYearsRangeRequest)
+      returns (GetTotalPublishersGameSalesInYearsRangeReply);
   rpc GetTotalGameSalesInYearsRangeByGenre(
       GetTotalGameSalesInYearsRangeRequestByGenreRequest)
       returns (GetTotalGameSalesInYearsRangeRequestByGenreReply);
@@ -89,33 +90,33 @@ message SearchGameSalesByNameReply {
   repeated GameSale items = 1;
 }
 
-message GetTopNGamesInPlatformsRequest {
+message GetTopNGamesOfPlatformsRequest {
   uint64 n = 1;
 }
 
-message GetTopNGamesInPlatformsReply {
+message GetTopNGamesOfPlatformsReply {
   message GameSales {
     repeated GameSale items = 1;
   }
   map<string, GameSales> group = 1;
 }
 
-message GetTopNGamesInYearRequest {
+message GetTopNGamesOfYearRequest {
   uint64 n = 1;
 }
 
-message GetTopNGamesInYearReply {
+message GetTopNGamesOfYearReply {
   message GameSales {
     repeated GameSale items = 1;
   }
   map<string, GameSales> group = 1;
 }
 
-message GetTopNGamesInGenreRequest {
+message GetTopNGamesOfGenreRequest {
   uint64 n = 1;
 }
 
-message GetTopNGamesInGenreReply {
+message GetTopNGamesOfGenreReply {
   message GameSales {
     repeated GameSale items = 1;
   }
@@ -131,19 +132,20 @@ message Get5MostSoldGamesByYearAndPlatformReply {
   repeated GameSale items = 1;
 }
 
-message GetMoreEUSoldThanNAGamesRequest {
+message GetGameSalesWithMoreSalesInEUThanNARequest {
+
 }
 
-message GetMoreEUSoldThanNAGamesReply {
+message GetGameSalesWithMoreSalesInEUThanNAReply {
   repeated GameSale items = 1;
 }
 
-message GetGameSalesByIdRequest {
-  string id = 1;
+message GetGameSalesInIdsRequest {
+  repeated string ids = 1;
 }
 
-message GetGameSalesByIdReply {
-  GameSale game_sale = 1;
+message GetGameSalesInIdsReply {
+  map<string, GameSale> game_sales = 1;
 }
 
 message GetYearlyTotalGameSalesInRangeRequest {
@@ -156,23 +158,21 @@ message GetYearlyTotalGameSalesInRangeReply {
     uint32 year = 1;
     float total_game_sales = 2;
   }
-
   repeated TotalYearGameSales items = 1;
 }
 
-message GetTotalPublisherGameSalesInYearsRangeRequest {
-  string publisher_id = 1;
+message GetTotalPublishersGameSalesInYearsRangeRequest {
+  repeated string publisher_ids = 1;
   uint32 start_year = 2;
   uint32 end_year = 3;
 }
 
-message GetTotalPublisherGameSalesInYearsRangeReply {
-  string publisher_id = 1;
-  message TotalYearGameSales {
+message GetTotalPublishersGameSalesInYearsRangeReply {
+  message PublisherTotalYearGameSales {
     uint32 year = 1;
     float total_game_sales = 2;
   }
-  repeated TotalYearGameSales items = 2;
+  map<string, PublisherTotalYearGameSales> publisher_sales = 2;
 }
 
 message GetTotalGameSalesInYearsRangeRequestByGenreRequest {
@@ -185,5 +185,5 @@ message GetTotalGameSalesInYearsRangeRequestByGenreReply {
     string genre = 1;
     float total_game_sales = 2;
   }
-  repeated TotalGenreGameSales items = 1;
+  map<string, TotalGenreGameSales> genre_total_sales = 1;
 }
