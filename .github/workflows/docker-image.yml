@@ -52,7 +52,7 @@ jobs:
           push: true
           pull: true
           context: .
-          file: Dockerfile
+          file: slim.Dockerfile
           no-cache: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

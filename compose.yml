@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+services:
+  cache:
+    container_name: cache
+    networks:
+      - corenet
+    image: docker.io/bitnami/redis:6.2
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      # - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PORT_NUMBER=7658
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?}
+      # unset the following for production
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - 6470:7658
+    volumes:
+      - redis_data:/bitnami/redis/data
+    restart: always
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - -h
+        - cache
+        - -p
+        - "7658"
+        - ping
+      interval: 5s
+      timeout: 2s
+      retries: 2
+      start_period: 2s
+  coresrv:
+    container_name: coresrv_app
+    networks:
+      - corenet
+    image: coresrv:dev
+    build:
+      dockerfile: Dockerfile
+      context: .
+    depends_on:
+      cache:
+        condition: service_healthy
+    environment:
+      REDIS_HOST: cache
+      REDIS_PORT: 7658
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?}
+    ports:
+      - "50050:8080"
+    restart: on-failure
+    healthcheck:
+      test:
+        - CMD
+        - /app/Ping
+        - http://coresrv:8080
+      interval: 5s
+      timeout: 3s
+      start_period: 5s
+      retries: 2
+volumes:
+  redis_data:
+    name: redis_data
+networks:
+  corenet:
+    name: corenet
