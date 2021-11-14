@@ -1,0 +1,8 @@
+*
+!/Properties/
+!/Services/
+!/appsettings.Development.json/
+!/appsettings.json/
+!/Coresrv.csproj/
+!/Protos/
+!/Program.cs
