@@ -7,6 +7,7 @@ import "google/protobuf/timestamp.proto";
 option csharp_namespace = "GSA.Services";
 
 service CoreService {
+  rpc Ping(PingRequest) returns (PingReply);
   rpc BulkStoreGameSales(BulkStoreGameSalesRequest)
       returns (BulkStoreGameSalesReply);
   rpc GetGameSalesByRank(GetGameSalesByRankRequest)
@@ -35,6 +36,13 @@ service CoreService {
   rpc GetTotalGameSalesInYearsRangeByGenre(
       GetTotalGameSalesInYearsRangeRequestByGenreRequest)
       returns (GetTotalGameSalesInYearsRangeRequestByGenreReply);
+}
+
+message PingRequest {
+}
+
+message PingReply {
+  bool pong = 1;
 }
 
 message GameSale {
