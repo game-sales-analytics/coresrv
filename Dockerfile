@@ -12,7 +12,7 @@ RUN dotnet publish --self-contained true --configuration release --output /app -
 
 
 # FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-alpine-amd64
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+FROM mcr.microsoft.com/dotnet/runtime-deps:6.0
 
 WORKDIR /app
 
