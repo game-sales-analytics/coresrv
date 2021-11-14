@@ -27,7 +27,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}
             type=semver,pattern={{major}}.{{minor}}
-            type=schedule,pattern=nightly,enable=${{ github.event_name == 'schedule' ) }}
+            type=schedule,pattern=nightly,enable=${{ github.event_name == 'schedule' }}
           labels: |
             maintainer=xeptore
             org.opencontainers.image.authors=xeptore
