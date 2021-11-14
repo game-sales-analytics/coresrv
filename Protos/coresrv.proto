@@ -25,7 +25,8 @@ service CoreService {
   rpc GetGameSalesWithMoreSalesInEUThanNA(
       GetGameSalesWithMoreSalesInEUThanNARequest)
       returns (GetGameSalesWithMoreSalesInEUThanNAReply);
-  rpc GetGameSalesInIds(GetGameSalesInIdsRequest) returns (GetGameSalesInIdsReply);
+  rpc GetGameSalesInIds(GetGameSalesInIdsRequest)
+      returns (GetGameSalesInIdsReply);
   rpc GetYearlyTotalGameSalesInRange(GetYearlyTotalGameSalesInRangeRequest)
       returns (GetYearlyTotalGameSalesInRangeReply);
   rpc GetTotalPublishersGameSalesInYearsRange(
@@ -133,7 +134,6 @@ message Get5MostSoldGamesByYearAndPlatformReply {
 }
 
 message GetGameSalesWithMoreSalesInEUThanNARequest {
-
 }
 
 message GetGameSalesWithMoreSalesInEUThanNAReply {
