@@ -26,6 +26,76 @@ services:
       timeout: 2s
       retries: 2
       start_period: 2s
+  db:
+    container_name: core_db
+    networks:
+      - corenet
+    image: docker.io/bitnami/postgresql:14
+    environment:
+      POSTGRESQL_POSTGRES_PASSWORD: ${POSTGRESQL_ROOT_PASSWORD:?}
+      POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD:?}
+      POSTGRESQL_USERNAME: ${POSTGRESQL_USERNAME:?}
+      POSTGRESQL_DATABASE: ${POSTGRESQL_DATABASE:?}
+    ports:
+      - 5432:5432
+    volumes:
+      - core_data:/bitnami/postgresql
+    restart: always
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -t
+        - "5"
+        - -d
+        - $POSTGRESQL_DATABASE
+        - -h
+        - db
+        - -p
+        - "5432"
+        - -U
+        - $POSTGRESQL_USERNAME
+      interval: 5s
+      timeout: 2s
+      retries: 2
+      start_period: 2s
+  db_admin:
+    container_name: core_db_admin
+    networks:
+      - corenet
+    image: docker.io/dpage/pgadmin4:6
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?}
+      PGADMIN_DISABLE_POSTFIX: true
+      PGADMIN_LISTEN_ADDRESS: db_admin
+      PGADMIN_LISTEN_PORT: 8585
+    volumes:
+      - db_admin_data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 8585:8585
+    restart: unless-stopped
+    # healthcheck:
+    #   test:
+    #     - CMD
+    #     - pg_isready
+    #     - -t
+    #     - "5"
+    #     - -d
+    #     - $POSTGRESQL_DATABASE
+    #     - -h
+    #     - db
+    #     - -p
+    #     - "5432"
+    #     - -U
+    #     - $POSTGRESQL_USERNAME
+    #   interval: 5s
+    #   timeout: 2s
+    #   retries: 2
+    #   start_period: 2s
   coresrv:
     container_name: coresrv_app
     networks:
@@ -37,10 +107,17 @@ services:
     depends_on:
       cache:
         condition: service_healthy
+      db:
+        condition: service_healthy
     environment:
       REDIS_HOST: cache
       REDIS_PORT: 7658
       REDIS_PASSWORD: ${REDIS_PASSWORD:?}
+      POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD:?}
+      POSTGRESQL_USERNAME: ${POSTGRESQL_USERNAME:?}
+      POSTGRESQL_DB: ${POSTGRESQL_DATABASE:?}
+      POSTGRESQL_HOST: db
+      POSTGRESQL_PORT: 5432
     ports:
       - "50050:8080"
     restart: on-failure
@@ -56,6 +133,10 @@ services:
 volumes:
   redis_data:
     name: redis_data
+  core_data:
+    name: core_data
+  db_admin_data:
+    name: db_admin_data
 networks:
   corenet:
     name: corenet
