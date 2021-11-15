@@ -1,67 +1,92 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 using Google.Protobuf.WellKnownTypes;
+using Google.Protobuf.Collections;
 using Grpc.Core;
 using GSA.Services;
+using App.DB.Repository;
 
-namespace App;
-
-public class MainService : CoreService.CoreServiceBase
+namespace App
 {
-    private readonly ILogger<MainService> _logger;
-
-    private readonly IDatabase _cache;
-
-    private readonly IConfiguration _configuration;
-
-    public MainService(
-        ILogger<MainService> logger,
-        IDatabase cache,
-        IConfiguration configuration
-    )
+    public class MainService : CoreService.CoreServiceBase
     {
-        _logger = logger;
-        _cache = cache;
-        _configuration = configuration;
-    }
+        private readonly ILogger<MainService> _logger;
 
-    public override async Task<PingReply> Ping(PingRequest request, ServerCallContext context)
-    {
-        return await Task.FromResult(new PingReply { Pong = true });
-    }
+        private readonly IDatabase _cache;
 
-    public override async Task<BulkStoreGameSalesReply> BulkStoreGameSales(BulkStoreGameSalesRequest request, ServerCallContext context)
-    {
-        var value = await _cache.StringGetAsync("prev_id");
-        if (value.IsNullOrEmpty)
+        private readonly IConfiguration _configuration;
+
+        private readonly GameSalesRepository _repo;
+
+        public MainService(
+            ILogger<MainService> logger,
+            IDatabase cache,
+            IConfiguration configuration,
+            GameSalesRepository repo
+        )
         {
-            value = Nanoid.Nanoid.Generate(size: 64);
-            await _cache.StringSetAsync("prev_id", value);
+            _logger = logger;
+            _cache = cache;
+            _configuration = configuration;
+            _repo = repo;
         }
 
-        var reply = new BulkStoreGameSalesReply { };
-        reply.Items.Add(
-            new GameSale
-            {
-                EuSales = 29.02F,
-                Genre = "Sports",
-                GlobalSales = 82.74F,
-                OtherSales = 8.46F,
-                JpSales = 3.77F,
-                Id = value,
-                Name = "Wii Sports",
-                Rank = 1,
-                Publisher = "Wii",
-                Year = 2006,
-                RegisteredAt = Timestamp.FromDateTime(DateTime.UtcNow),
-                Platform = "Nintendo",
-                NaSales = 41.49F,
-            }
-        );
+        public override async Task<PingReply> Ping(PingRequest request, ServerCallContext context)
+        {
+            return await Task.FromResult(new PingReply { Pong = true });
+        }
 
-        return await Task.FromResult(reply);
+        public override async Task<BulkStoreGameSalesReply> BulkStoreGameSales(BulkStoreGameSalesRequest request, ServerCallContext context)
+        {
+            var gameSales = request.Items.Select(g => new Models.GameSale
+            {
+                EuSales = g.EuSales,
+                Genre = g.Genre,
+                GlobalSales = g.GlobalSales,
+                Id = Nanoid.Nanoid.Generate(size: 32),
+                JpSales = g.JpSales,
+                Name = g.Name,
+                NaSales = g.NaSales,
+                OtherSales = g.OtherSales,
+                Platform = g.Platform,
+                Publisher = g.Publisher,
+                Rank = g.Rank,
+                RegisteredAt = DateTime.UtcNow,
+                Year = g.Year,
+            }).ToList();
+
+            await _repo.SaveBulkGameSalesAsync(gameSales);
+
+            var reply = new BulkStoreGameSalesReply { };
+            var replyItems = new List<GameSale>(gameSales.Count);
+            foreach (var item in gameSales)
+            {
+                replyItems.Add(new GameSale
+                {
+                    EuSales = item.EuSales,
+                    Genre = item.Genre,
+                    GlobalSales = item.GlobalSales,
+                    Id = item.Id,
+                    JpSales = item.JpSales,
+                    Name = item.Name,
+                    NaSales = item.NaSales,
+                    OtherSales = item.OtherSales,
+                    Platform = item.Platform,
+                    Publisher = item.Publisher,
+                    Rank = item.Rank,
+                    RegisteredAt = Timestamp.FromDateTime(item.RegisteredAt),
+                    Year = item.Year,
+                });
+            }
+            reply.Items.AddRange(replyItems);
+
+            return await Task.FromResult(reply);
+        }
     }
+
 }
