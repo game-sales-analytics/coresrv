@@ -19,3 +19,6 @@ This service is responsible for all the game sales data, from storing, updating,
 - Custom server listening ports:
   - <https://andrewlock.net/5-ways-to-set-the-urls-for-an-aspnetcore-app/>
   - <https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/endpoints?view=aspnetcore-6.0>
+- gRPC Interceptors:
+  - <https://developpaper.com/use-of-asp-net-core-3-0-grpc-interceptor/>
+  - <https://docs.microsoft.com/ga-ie/aspnet/core/grpc/migration?view=aspnetcore-6.0#grpc-interceptors-vs-middleware>
