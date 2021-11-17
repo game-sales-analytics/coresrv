@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace App.DB.Repository
 {
     public class GameSalesRepository : IGameSalesRepository
@@ -43,8 +42,13 @@ namespace App.DB.Repository
         public async Task<IEnumerable<Models.GameSale>> SearchGameByName(string name)
         {
             return await _context.GameSales
-            .Where(g => EF.Functions.ToTsVector("english", g.Name).Matches(name))
-            .ToListAsync();
+                .Where(g => EF.Functions.ToTsVector("english", g.Name).Matches(name))
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Models.GameSale>> GetGameSalesWithMoreSalesInEUThanNA()
+        {
+            return await _context.GameSales.Where(g => g.EuSales > g.NaSales).ToListAsync();
         }
     }
 }

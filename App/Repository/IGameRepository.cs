@@ -8,5 +8,7 @@ namespace App.DB.Repository
         Task SaveBulkGameSalesAsync(IEnumerable<App.Models.GameSale> gameSales);
 
         Task<IEnumerable<Models.GameSale>> SearchGameByName(string name);
+
+        Task<IEnumerable<Models.GameSale>> GetGameSalesWithMoreSalesInEUThanNA();
     }
 }
