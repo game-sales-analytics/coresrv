@@ -2,7 +2,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
-        <Nullable>disable</Nullable>
+        <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
         <RuntimeIdentifiers>linux-x64;linux-musl-x64</RuntimeIdentifiers>
         <PublishReadyToRun>true</PublishReadyToRun>
