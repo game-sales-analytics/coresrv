@@ -1,4 +1,6 @@
 using System;
+using NpgsqlTypes;
+
 
 namespace App.DB.Models
 {
@@ -29,5 +31,7 @@ namespace App.DB.Models
         public string Platform { get; init; }
 
         public float NaSales { get; init; }
+
+        public NpgsqlTsVector SearchVector { get; init; }
     };
 }

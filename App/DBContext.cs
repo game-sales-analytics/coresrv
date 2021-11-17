@@ -81,6 +81,14 @@ namespace App.DB
                 .Property(g => g.RegisteredAt)
                 .IsRequired(true)
                 .HasColumnType("timestamp with time zone");
+            modelBuilder.Entity<GameSale>()
+                .HasGeneratedTsVectorColumn(
+                    p => p.SearchVector,
+                    "english",
+                    p => new { p.Name }
+                )
+                .HasIndex(p => p.SearchVector)
+                .HasMethod("GIN");
         }
     }
 }
