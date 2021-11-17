@@ -63,6 +63,9 @@ namespace App.DB
                 .IsRequired(true)
                 .HasColumnType("smallserial");
             modelBuilder.Entity<GameSale>()
+                .HasIndex(g => g.Year, "GAME_SALE_YEAR_IDX")
+                .IsUnique(false);
+            modelBuilder.Entity<GameSale>()
                 .Property(g => g.EuSales)
                 .IsRequired(true)
                 .HasColumnType("real");
