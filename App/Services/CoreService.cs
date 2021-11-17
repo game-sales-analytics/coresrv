@@ -59,8 +59,16 @@ namespace App
                 Year = g.Year,
             }).ToList();
 
-            await _repo.SaveBulkGameSalesAsync(gameSales);
-            await cache.UpdateGamesSalesCacheAsync();
+            try
+            {
+                await _repo.SaveBulkGameSalesAsync(gameSales, context.CancellationToken);
+            }
+            catch (App.DB.DuplicateRecordException)
+            {
+                throw new RpcException(new Status(StatusCode.AlreadyExists, "duplicate game sale entry exists"));
+            }
+
+            await cache.UpdateGamesSalesCacheAsync(context.CancellationToken);
 
             var reply = new BulkStoreGameSalesReply { };
             var replyItems = new List<GameSale>(gameSales.Count);
@@ -141,6 +149,35 @@ namespace App
             var reply = new GetGameSalesWithMoreSalesInEUThanNAReply { };
             reply.Items.AddRange(games);
             return reply;
+        }
+
+        public override async Task<GetGameSalesByRankReply> GetGameSalesByRank(GetGameSalesByRankRequest request, ServerCallContext context)
+        {
+            var game = await _repo.GetGameSalesByRank(request.Rank, context.CancellationToken);
+            if (game == null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "game with specified rank does not exist"));
+            }
+
+            return new GetGameSalesByRankReply
+            {
+                GameSale = new GameSale
+                {
+                    EuSales = game.EuSales,
+                    Genre = game.Genre,
+                    GlobalSales = game.GlobalSales,
+                    Id = game.Id,
+                    JpSales = game.JpSales,
+                    Name = game.Name,
+                    NaSales = game.NaSales,
+                    OtherSales = game.OtherSales,
+                    Platform = game.Platform,
+                    Publisher = game.Publisher,
+                    Rank = game.Rank,
+                    RegisteredAt = Timestamp.FromDateTime(game.RegisteredAt),
+                    Year = game.Year,
+                }
+            };
         }
     }
 }
