@@ -11,7 +11,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Protobuf Include="../api/coresrv.proto" GrpcServices="Server" />
-        <Protobuf Include="api/userssrv.proto" GrpcServices="Client" AdditionalImportDirs="Internal">
+        <Protobuf Include="./api/userssrv.proto" GrpcServices="Client" AdditionalImportDirs="Internal">
             <SourceUrl>https://raw.githubusercontent.com/game-sales-analytics/userssrv/main/api/userssrv.proto</SourceUrl>
         </Protobuf>
     </ItemGroup>
