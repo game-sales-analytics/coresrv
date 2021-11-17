@@ -90,6 +90,9 @@ namespace App.DB
                 .IsRequired(true)
                 .HasColumnType("serial");
             modelBuilder.Entity<GameSale>()
+                .HasIndex(g => g.Rank, "GAME_SALE_RANK_IDX")
+                .IsUnique(true);
+            modelBuilder.Entity<GameSale>()
                 .Property(g => g.RegisteredAt)
                 .IsRequired(true)
                 .HasColumnType("timestamp with time zone");
