@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using System.Threading;
 using System.Collections.Generic;
 using GSA.Rpc;
 
@@ -7,7 +8,7 @@ namespace App
 {
     public interface ICacheService
     {
-        Task UpdateGamesSalesCacheAsync();
+        Task UpdateGamesSalesCacheAsync(CancellationToken ct);
 
         Task<ReadGamesWithMoreEUSalesThanNASalesAsyncResult> ReadGamesWithMoreEUSalesThanNASalesAsync();
     }
@@ -16,6 +17,6 @@ namespace App
     {
         public bool IsNullOrEmpty { get; init; }
 
-        public IEnumerable<GameSale> GameSales { get; init; }
+        public IEnumerable<GameSale> GameSales { get; init; } = default!;
     }
 }

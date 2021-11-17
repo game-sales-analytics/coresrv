@@ -91,7 +91,7 @@ namespace App
         public override async Task<SearchGameSalesByNameReply> SearchGameSalesByName(SearchGameSalesByNameRequest request, ServerCallContext context)
         {
             var reply = new SearchGameSalesByNameReply { };
-            reply.Items.AddRange((await _repo.SearchGameByName(request.Name)).Select(item => new GameSale
+            reply.Items.AddRange((await _repo.SearchGameByName(request.Name, context.CancellationToken)).Select(item => new GameSale
             {
                 EuSales = item.EuSales,
                 Genre = item.Genre,
@@ -121,7 +121,7 @@ namespace App
             }
             else
             {
-                games = (await _repo.GetGameSalesWithMoreSalesInEUThanNA()).Select(item => new GameSale
+                games = (await _repo.GetGameSalesWithMoreSalesInEUThanNA(context.CancellationToken)).Select(item => new GameSale
                 {
                     EuSales = item.EuSales,
                     Genre = item.Genre,

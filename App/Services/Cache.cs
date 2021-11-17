@@ -2,6 +2,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 using StackExchange.Redis;
 using Google.Protobuf.WellKnownTypes;
 using App.DB.Repository;
@@ -32,7 +33,7 @@ namespace App
                     GameSales = JsonSerializer.Deserialize<IEnumerable<GameSale>>(cachedResponse, new JsonSerializerOptions
                     {
                         AllowTrailingCommas = false,
-                    }),
+                    })!,
                 };
             }
 
@@ -43,14 +44,14 @@ namespace App
             };
         }
 
-        public async Task UpdateGamesSalesCacheAsync()
+        public async Task UpdateGamesSalesCacheAsync(CancellationToken ct)
         {
-            await UpdateGamesWithMoreSalesInEuThanNaCacheAsync();
+            await UpdateGamesWithMoreSalesInEuThanNaCacheAsync(ct);
         }
 
-        private async Task UpdateGamesWithMoreSalesInEuThanNaCacheAsync()
+        private async Task UpdateGamesWithMoreSalesInEuThanNaCacheAsync(CancellationToken ct)
         {
-            var games = (await gameSalesRepository.GetGameSalesWithMoreSalesInEUThanNA()).Select(item => new GameSale
+            var games = (await gameSalesRepository.GetGameSalesWithMoreSalesInEUThanNA(ct)).Select(item => new GameSale
             {
                 EuSales = item.EuSales,
                 Genre = item.Genre,
