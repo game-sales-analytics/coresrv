@@ -19,7 +19,11 @@ builder.Services.AddDbContext<GameSalesContext>(options =>
     .UseNpgsql(PostgreSQL.BuildPostgreSQLConnectionString(builder.Configuration))
     .UseSnakeCaseNamingConvention();
 });
-builder.Services.AddSingleton<GameSalesRepository>();
+builder.Services.AddScoped<IGameSalesRepository, GameSalesRepository>();
+builder.Services.AddGrpc(options =>
+{
+    options.Interceptors.Add<App.Interceptors.LoggerInterceptor>();
+});
 
 var app = builder.Build();
 
