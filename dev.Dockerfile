@@ -2,30 +2,20 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 
-WORKDIR /source
+ARG USER
 
-COPY coresrv.sln .
+ARG UID=1000
 
-COPY App/App.csproj ./App/
+ARG GID=1000
 
-COPY Ping/Ping.csproj ./Ping/
+RUN groupadd --gid ${GID} normals && useradd --create-home --gid ${GID} --uid ${UID} ${USER}
 
-RUN dotnet restore --runtime linux-x64
+USER ${USER}
 
-COPY . .
+WORKDIR /home/${USER}/source
 
-RUN dotnet publish --self-contained true --configuration debug --output /app --runtime linux-x64 --no-restore
+ARG PORT=${PORT}
 
-FROM mcr.microsoft.com/dotnet/runtime-deps:6.0
+ENV ASPNETCORE_URLS=http://+:${PORT}/
 
-WORKDIR /app
-
-COPY --from=build /app .
-
-ENV PORT=8080
-
-EXPOSE ${PORT}
-
-ENV ASPNETCORE_URLS=http://+:${PORT}
-
-ENTRYPOINT ["./App"]
+CMD [ "dotnet", "watch", "--no-hot-reload", "run", "--project", "App" ]
