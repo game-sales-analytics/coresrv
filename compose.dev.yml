@@ -1,43 +1,110 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 services:
+  users_db:
+    container_name: users_db
+    networks:
+      - gsa
+    image: docker.io/bitnami/mongodb:5.0
+    volumes:
+      - users_db:/bitnami/mongodb
+    environment:
+      MONGODB_PORT_NUMBER: 20321
+      MONGODB_ROOT_USER: ${USERS_MONGO_ROOT_USERNAME:?}
+      MONGODB_ROOT_PASSWORD: ${USERS_MONGO_ROOT_PASSWORD:?}
+      MONGODB_USERNAME: ${USERS_MONGO_USERNAME:?}
+      MONGODB_PASSWORD: ${USERS_MONGO_PASSWORD:?}
+      MONGODB_DATABASE: ${USERS_MONGO_DATABASE:?}
+    restart: always
+    healthcheck:
+      test: mongo --username $$MONGODB_USERNAME --password $$MONGODB_PASSWORD --host users_db --port $$MONGODB_PORT_NUMBER $$MONGODB_DATABASE --authenticationDatabase=$$MONGODB_DATABASE --quiet --eval 'db.runCommand("ping").ok'
+      interval: 5s
+      timeout: 2s
+      retries: 2
+      start_period: 5s
+  users_db_admin:
+    container_name: users_db_admin
+    networks:
+      - gsa
+    image: docker.io/xeptore/mongo-express-wget:latest
+    ports:
+      - "9090:8081"
+    depends_on:
+      users_db:
+        condition: service_healthy
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: ${USERS_MONGO_WEB_USERNAME:?}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${USERS_MONGO_WEB_PASSWORD:?}
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${USERS_MONGO_ROOT_USERNAME:?}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${USERS_MONGO_ROOT_PASSWORD:?}
+      ME_CONFIG_OPTIONS_EDITORTHEME: base16-dark
+      ME_CONFIG_MONGODB_PORT: 20321
+      ME_CONFIG_MONGODB_SERVER: users_db
+      VCAP_APP_HOST: users_db_admin
+    restart: unless-stopped
+    healthcheck:
+      test: wget --quiet --tries=1 --spider --auth-no-challenge --http-user=$$ME_CONFIG_BASICAUTH_USERNAME --http-password=$$ME_CONFIG_BASICAUTH_PASSWORD http://users_db_admin:8081/db/admin
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 5s
+  userssrv:
+    container_name: userssrv_app
+    networks:
+      - gsa
+    image: docker.io/xeptore/gsa-userssrv:edge
+    depends_on:
+      users_db:
+        condition: service_healthy
+    environment:
+      SERVER_HOST: userssrv
+      SERVER_PORT: 50050
+      DATABASE_HOST: users_db
+      DATABASE_PORT: 20321
+      DATABASE_USE_AUTH: true
+      DATABASE_USERNAME: ${USERS_MONGO_USERNAME:?}
+      DATABASE_PASSWORD: ${USERS_MONGO_PASSWORD:?}
+      DATABASE_NAME: ${USERS_MONGO_DATABASE:?}
+      JWT_SECRET: ${JWT_SECRET:?}
+    restart: on-failure
+    ports:
+      - "50051:50050"
+    healthcheck:
+      test:
+        - CMD
+        - /ping
+        - userssrv:50050
+      interval: 5s
+      timeout: 3s
+      start_period: 5s
+      retries: 2
   cache:
     container_name: cache
     networks:
-      - corenet
+      - gsa
     image: docker.io/bitnami/redis:6.2
     environment:
       - REDIS_PORT_NUMBER=7658
       - REDIS_PASSWORD=${REDIS_PASSWORD:?}
-    ports:
-      - 6470:7658
     volumes:
       - redis_data:/bitnami/redis/data
     restart: always
     healthcheck:
-      test:
-        - CMD
-        - redis-cli
-        - -h
-        - cache
-        - -p
-        - "7658"
-        - ping
+      test: redis-cli -h cache -p $$REDIS_PORT_NUMBER ping
       interval: 5s
       timeout: 2s
       retries: 2
       start_period: 2s
-  db:
+  core_db:
     container_name: core_db
     networks:
-      - corenet
+      - gsa
     image: docker.io/bitnami/postgresql:14
     environment:
       POSTGRESQL_POSTGRES_PASSWORD: ${POSTGRESQL_ROOT_PASSWORD:?}
       POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD:?}
       POSTGRESQL_USERNAME: ${POSTGRESQL_USERNAME:?}
       POSTGRESQL_DATABASE: ${POSTGRESQL_DATABASE:?}
-    ports:
-      - 5432:5432
     volumes:
       - core_data:/bitnami/postgresql
     restart: always
@@ -50,7 +117,7 @@ services:
         - -d
         - $POSTGRESQL_DATABASE
         - -h
-        - db
+        - core_db
         - -p
         - "5432"
         - -U
@@ -59,55 +126,50 @@ services:
       timeout: 2s
       retries: 2
       start_period: 2s
-  db_admin:
+  core_db_admin:
     container_name: core_db_admin
     networks:
-      - corenet
+      - gsa
     image: docker.io/dpage/pgadmin4:6
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?}
       PGADMIN_DISABLE_POSTFIX: true
-      PGADMIN_LISTEN_ADDRESS: db_admin
+      PGADMIN_LISTEN_ADDRESS: core_db_admin
       PGADMIN_LISTEN_PORT: 8585
     volumes:
-      - db_admin_data:/var/lib/pgadmin
+      - core_db_admin_data:/var/lib/pgadmin
     depends_on:
-      db:
+      core_db:
         condition: service_healthy
     ports:
       - 8585:8585
     restart: unless-stopped
-    # healthcheck:
-    #   test:
-    #     - CMD
-    #     - pg_isready
-    #     - -t
-    #     - "5"
-    #     - -d
-    #     - $POSTGRESQL_DATABASE
-    #     - -h
-    #     - db
-    #     - -p
-    #     - "5432"
-    #     - -U
-    #     - $POSTGRESQL_USERNAME
-    #   interval: 5s
-    #   timeout: 2s
-    #   retries: 2
-    #   start_period: 2s
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://core_db_admin:$$PGADMIN_LISTEN_PORT/login
+      interval: 5s
+      timeout: 2s
+      retries: 2
+      start_period: 2s
   coresrv:
     container_name: coresrv_app
+    volumes:
+      - .:/home/developer/source/:rw
+      - coresrv_cache:/home/developer:rw
     networks:
-      - corenet
-    image: coresrv:dev
+      - gsa
     build:
       dockerfile: dev.Dockerfile
       context: .
+      args:
+        PORT: 8484
+        USER: developer
     depends_on:
       cache:
         condition: service_healthy
-      db:
+      core_db:
+        condition: service_healthy
+      userssrv:
         condition: service_healthy
     environment:
       REDIS_HOST: cache
@@ -116,27 +178,23 @@ services:
       POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD:?}
       POSTGRESQL_USERNAME: ${POSTGRESQL_USERNAME:?}
       POSTGRESQL_DB: ${POSTGRESQL_DATABASE:?}
-      POSTGRESQL_HOST: db
+      POSTGRESQL_HOST: core_db
       POSTGRESQL_PORT: 5432
+      USERS_SERVICE_ADDRESS: http://userssrv:50050
     ports:
-      - "50050:8080"
-    restart: on-failure
-    healthcheck:
-      test:
-        - CMD
-        - /app/Ping
-        - http://coresrv:8080
-      interval: 5s
-      timeout: 3s
-      start_period: 5s
-      retries: 2
+      - "50050:8484"
+    restart: "no"
 volumes:
+  coresrv_cache:
+    name: coresrv_cache
   redis_data:
     name: redis_data
   core_data:
     name: core_data
-  db_admin_data:
-    name: db_admin_data
+  core_db_admin_data:
+    name: core_db_admin_data
+  users_db:
+    name: users_db
 networks:
-  corenet:
-    name: corenet
+  gsa:
+    name: gsa
