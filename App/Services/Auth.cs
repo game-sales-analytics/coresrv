@@ -2,33 +2,50 @@ using System;
 using Grpc.Net.Client;
 using Grpc.Core;
 using GSA.Grpc;
-
+using System.Threading.Tasks;
 
 namespace App
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
-        public AuthService(string serviceUrl, string token)
+        private readonly UsersService.UsersServiceClient client;
+
+        public AuthService(string serviceAddress)
         {
-            using var channel = GrpcChannel.ForAddress(serviceUrl);
-            var client = new UsersService.UsersServiceClient(channel);
             try
             {
-                var reply = client.Authenticate(
+                var channel = GrpcChannel.ForAddress(serviceAddress);
+                client = new UsersService.UsersServiceClient(channel);
+            }
+            catch (System.Exception)
+            {
+                throw new ConnectionFailureException();
+            }
+        }
+
+        async Task<bool> IAuthService.IsUserAuthenticated(string token)
+        {
+            try
+            {
+                var reply = await client.AuthenticateAsync(
                     new AuthenticateRequest
                     {
                         Token = token,
                     });
-                Console.WriteLine("User: " + reply.AuthenticatedUser);
+                return true;
             }
             catch (RpcException e) when (e.StatusCode == StatusCode.Unauthenticated)
             {
-                Console.WriteLine("bad token.");
+                return false;
             }
             catch (RpcException e) when (e.StatusCode == StatusCode.Internal)
             {
-                Console.WriteLine("service failed");
+                throw new ServiceFailureException();
             }
         }
     }
+
+    public class ConnectionFailureException : Exception { }
+
+    public class ServiceFailureException : Exception { }
 }

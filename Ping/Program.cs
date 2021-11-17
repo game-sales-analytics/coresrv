@@ -1,5 +1,6 @@
 using System;
 using Grpc.Net.Client;
+using Grpc.Core;
 using GSA.Services;
 
 
@@ -19,6 +20,11 @@ try
     var client = new CoreService.CoreServiceClient(channel);
     var reply = client.Ping(new PingRequest { });
     Console.WriteLine("pong: " + reply.Pong);
+    Environment.Exit(0);
+}
+catch (RpcException ex) when (ex.StatusCode == StatusCode.Unauthenticated || ex.StatusCode == StatusCode.InvalidArgument)
+{
+    Console.WriteLine("although receveied an error, but the error is accepted as a valid error.");
     Environment.Exit(0);
 }
 catch (System.UriFormatException)

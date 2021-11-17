@@ -90,15 +90,6 @@ namespace App
 
         public override async Task<SearchGameSalesByNameReply> SearchGameSalesByName(SearchGameSalesByNameRequest request, ServerCallContext context)
         {
-            var metas = context.RequestHeaders.GetAll("token").ToList();
-            if (metas.Count != 1)
-            {
-                Console.WriteLine("bad token meta data provided");
-                throw new RpcException(new Grpc.Core.Status(StatusCode.Unauthenticated, "bad credentials provided"));
-            }
-
-            var auth = new AuthService(_configuration["USERS_SERVICE_ADDRESS"], metas.First().Value);
-
             var reply = new SearchGameSalesByNameReply { };
             reply.Items.AddRange((await _repo.SearchGameByName(request.Name)).Select(item => new GameSale
             {
