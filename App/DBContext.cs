@@ -8,7 +8,7 @@ namespace App.DB
         public GameSalesContext(DbContextOptions<GameSalesContext> options) : base(options)
         { }
 
-        public DbSet<GameSale> GameSales { get; init; }
+        public DbSet<GameSale> GameSales { get; init; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
