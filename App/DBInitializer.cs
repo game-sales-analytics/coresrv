@@ -2,7 +2,7 @@ namespace App.DB
 {
     public static class DbInitializer
     {
-        public static void Initialize(GameSalesContext context)
+        public static void Initialize()
         { }
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using Grpc.Net.Client;
 using Grpc.Core;
-using GSA.Services;
+using GSA.Rpc;
 
 
 if (args.Length != 1)

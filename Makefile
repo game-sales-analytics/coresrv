@@ -3,7 +3,8 @@ clean:
 .PHONY: clean
 
 lint:
-	dotnet format
+	dotnet format --severity info --verify-no-changes --verbosity detailed
+	protolint -config_path .protolint.yaml -fix ./api/coresrv.proto
 .PHONY: lint
 
 build:

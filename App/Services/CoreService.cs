@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using GSA.Services;
+using GSA.Rpc;
 using App.DB.Repository;
 
 

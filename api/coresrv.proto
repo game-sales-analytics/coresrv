@@ -4,7 +4,7 @@ package coresrv;
 
 import "google/protobuf/timestamp.proto";
 
-option csharp_namespace = "GSA.Services";
+option csharp_namespace = "GSA.Rpc";
 
 service CoreService {
   rpc Ping(PingRequest) returns (PingReply);
