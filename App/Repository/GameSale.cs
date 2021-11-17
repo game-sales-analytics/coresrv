@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-using App;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace App.DB.Repository
 {
-    public class GameSalesRepository
+    public class GameSalesRepository : IGameSalesRepository
     {
         private readonly GameSalesContext _context;
 
@@ -37,6 +38,13 @@ namespace App.DB.Repository
 
             await _context.GameSales.AddRangeAsync(temp);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<Models.GameSale>> SearchGameByName(string name)
+        {
+            return await _context.GameSales
+            .Where(g => EF.Functions.ToTsVector("english", g.Name).Matches(name))
+            .ToListAsync();
         }
     }
 }
