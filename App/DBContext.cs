@@ -38,6 +38,9 @@ namespace App.DB
                 .HasColumnType("character varying(32)")
                 .HasComment("Game genre");
             modelBuilder.Entity<GameSale>()
+                .HasIndex(g => g.Genre, "GAME_SALE_GENRE_IDX")
+                .IsUnique(false);
+            modelBuilder.Entity<GameSale>()
                 .Property(g => g.Platform)
                 .IsRequired(true)
                 .HasMaxLength(32)
