@@ -56,6 +56,9 @@ namespace App.DB
                 .HasColumnType("character varying(32)")
                 .HasComment("Game publisher name");
             modelBuilder.Entity<GameSale>()
+                .HasIndex(g => g.Publisher, "GAME_SALE_PUBLISHER_IDX")
+                .IsUnique(false);
+            modelBuilder.Entity<GameSale>()
                 .Property(g => g.Year)
                 .IsRequired(true)
                 .HasColumnType("smallserial");
