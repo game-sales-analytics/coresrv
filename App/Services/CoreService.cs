@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using StackExchange.Redis;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GSA.Rpc;
@@ -17,7 +16,7 @@ namespace App
     {
         private readonly ILogger<MainService> _logger;
 
-        private readonly IDatabase _cache;
+        private readonly ICacheService cache;
 
         private readonly IConfiguration _configuration;
 
@@ -25,13 +24,13 @@ namespace App
 
         public MainService(
             ILogger<MainService> logger,
-            IDatabase cache,
+            ICacheService _cache,
             IConfiguration configuration,
             IGameSalesRepository repo
         )
         {
             _logger = logger;
-            _cache = cache;
+            cache = _cache;
             _configuration = configuration;
             _repo = repo;
         }
@@ -61,6 +60,7 @@ namespace App
             }).ToList();
 
             await _repo.SaveBulkGameSalesAsync(gameSales);
+            await cache.UpdateGamesSalesCacheAsync();
 
             var reply = new BulkStoreGameSalesReply { };
             var replyItems = new List<GameSale>(gameSales.Count);
@@ -109,6 +109,38 @@ namespace App
             }));
             return reply;
         }
-    }
 
+        public override async Task<GetGameSalesWithMoreSalesInEUThanNAReply> GetGameSalesWithMoreSalesInEUThanNA(GetGameSalesWithMoreSalesInEUThanNARequest request, ServerCallContext context)
+        {
+            IEnumerable<GameSale> games = new List<GameSale>();
+
+            var cachedResponse = await cache.ReadGamesWithMoreEUSalesThanNASalesAsync();
+            if (!cachedResponse.IsNullOrEmpty)
+            {
+                games = cachedResponse.GameSales;
+            }
+            else
+            {
+                games = (await _repo.GetGameSalesWithMoreSalesInEUThanNA()).Select(item => new GameSale
+                {
+                    EuSales = item.EuSales,
+                    Genre = item.Genre,
+                    GlobalSales = item.GlobalSales,
+                    Id = item.Id,
+                    JpSales = item.JpSales,
+                    Name = item.Name,
+                    NaSales = item.NaSales,
+                    OtherSales = item.OtherSales,
+                    Platform = item.Platform,
+                    Publisher = item.Publisher,
+                    Rank = item.Rank,
+                    RegisteredAt = Timestamp.FromDateTime(item.RegisteredAt),
+                    Year = item.Year,
+                });
+            }
+            var reply = new GetGameSalesWithMoreSalesInEUThanNAReply { };
+            reply.Items.AddRange(games);
+            return reply;
+        }
+    }
 }

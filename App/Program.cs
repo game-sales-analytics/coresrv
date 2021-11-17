@@ -22,6 +22,7 @@ builder.Services.AddDbContext<GameSalesContext>(options =>
 });
 
 builder.Services.AddScoped<IGameSalesRepository, GameSalesRepository>();
+builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddSingleton<IAuthService, AuthService>((p) => new AuthService(builder.Configuration["USERS_SERVICE_ADDRESS"]));
 
 builder.Services.AddGrpc(options =>
