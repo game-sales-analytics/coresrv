@@ -34,8 +34,8 @@ service CoreService {
       GetTotalPublishersGameSalesInYearsRangeRequest)
       returns (GetTotalPublishersGameSalesInYearsRangeReply);
   rpc GetTotalGameSalesInYearsRangeByGenre(
-      GetTotalGameSalesInYearsRangeRequestByGenreRequest)
-      returns (GetTotalGameSalesInYearsRangeRequestByGenreReply);
+      GetTotalGameSalesInYearsRangeByGenreRequest)
+      returns (GetTotalGameSalesInYearsRangeByGenreReply);
 }
 
 message PingRequest {
@@ -183,15 +183,11 @@ message GetTotalPublishersGameSalesInYearsRangeReply {
   map<string, PublisherTotalYearGameSales> publisher_sales = 2;
 }
 
-message GetTotalGameSalesInYearsRangeRequestByGenreRequest {
+message GetTotalGameSalesInYearsRangeByGenreRequest {
   uint32 start_year = 1;
   uint32 end_year = 2;
 }
 
-message GetTotalGameSalesInYearsRangeRequestByGenreReply {
-  message TotalGenreGameSales {
-    string genre = 1;
-    float total_game_sales = 2;
-  }
-  map<string, TotalGenreGameSales> genre_total_sales = 1;
+message GetTotalGameSalesInYearsRangeByGenreReply {
+  map<string, float> genre_total_sales = 1;
 }
