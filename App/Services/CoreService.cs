@@ -188,7 +188,30 @@ namespace App
             }
 
             return reply;
+        }
 
+        public override async Task<GetTotalPublishersGameSalesInYearsRangeReply> GetTotalPublishersGameSalesInYearsRange(GetTotalPublishersGameSalesInYearsRangeRequest request, ServerCallContext context)
+        {
+            var gameSales = await _repo.GetTotalPublishersGameSalesInYearsRange(
+                request.PublisherIds,
+                request.StartYear,
+                request.EndYear,
+                context.CancellationToken
+            );
+
+            var reply = new GetTotalPublishersGameSalesInYearsRangeReply();
+            foreach (var item in gameSales)
+            {
+                var yearSales = new GetTotalPublishersGameSalesInYearsRangeReply.Types.PublisherTotalYearsGameSales { };
+                yearSales.Items.AddRange(item.Value.Select(v => new GetTotalPublishersGameSalesInYearsRangeReply.Types.PublisherTotalYearsGameSales.Types.PublisherTotalYearGameSales
+                {
+                    TotalGameSales = v.TotalSales,
+                    Year = v.Year,
+                }));
+                reply.PublisherSales.Add(item.Key, yearSales);
+            }
+
+            return reply;
         }
 
         private GameSale dbToReply(DB.Models.GameSale input)
