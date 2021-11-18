@@ -179,5 +179,35 @@ namespace App
                 }
             };
         }
+
+        public override async Task<GetTopNGamesOfPlatformsReply> GetTopNGamesOfPlatforms(GetTopNGamesOfPlatformsRequest request, ServerCallContext context)
+        {
+            var platfromGamesMap = await _repo.GetTopNGamesOfPlatforms(request.N, context.CancellationToken);
+
+            var reply = new GetTopNGamesOfPlatformsReply();
+            foreach (var platformGame in platfromGamesMap)
+            {
+                var platformGames = new GetTopNGamesOfPlatformsReply.Types.GameSales { };
+                platformGames.Items.AddRange(platformGame.Value.Select(g => new GameSale
+                {
+                    EuSales = g.EuSales,
+                    Genre = g.Genre,
+                    GlobalSales = g.GlobalSales,
+                    Id = g.Id,
+                    JpSales = g.JpSales,
+                    Name = g.Name,
+                    NaSales = g.NaSales,
+                    OtherSales = g.OtherSales,
+                    Platform = g.Platform,
+                    Publisher = g.Publisher,
+                    Rank = g.Rank,
+                    RegisteredAt = Timestamp.FromDateTime(g.RegisteredAt),
+                    Year = g.Year,
+                }));
+                reply.Group.Add(platformGame.Key, platformGames);
+            }
+
+            return reply;
+        }
     }
 }
