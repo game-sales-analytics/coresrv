@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using App;
 using App.Interceptors;
@@ -9,6 +10,17 @@ using App.DB;
 using App.DB.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+
+if (builder.Environment.EnvironmentName == "Production")
+{
+    builder.Logging.AddJsonConsole();
+}
+else if (builder.Environment.EnvironmentName == "Development")
+{
+    builder.Logging.AddSimpleConsole();
+}
 
 builder.Configuration.AddEnvironmentVariables();
 
