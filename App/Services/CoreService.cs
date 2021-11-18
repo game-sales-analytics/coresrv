@@ -209,5 +209,18 @@ namespace App
 
             return reply;
         }
+
+        public override async Task<GetTotalGameSalesInYearsRangeByGenreReply> GetTotalGameSalesInYearsRangeByGenre(GetTotalGameSalesInYearsRangeByGenreRequest request, ServerCallContext context)
+        {
+            var gameSalesByGenres = await _repo.GetTotalGameSalesInYearsRangeByGenre(request.StartYear, request.EndYear, context.CancellationToken);
+
+            var reply = new GetTotalGameSalesInYearsRangeByGenreReply();
+            foreach (var item in gameSalesByGenres)
+            {
+                reply.GenreTotalSales.Add(item.Key, item.Value);
+            }
+
+            return reply;
+        }
     }
 }
