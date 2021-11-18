@@ -50,13 +50,11 @@ namespace App.DB.Repository
             }
             catch (DbUpdateException ex)
             {
-                switch (ex.InnerException)
+                throw ex.InnerException switch
                 {
-                    case PostgresException exception when exception.Severity == "ERROR" && exception.SqlState == PostgresErrorCodes.UniqueViolation:
-                        throw new DuplicateRecordException();
-                }
-
-                throw ex;
+                    PostgresException exception when exception.Severity == "ERROR" && exception.SqlState == PostgresErrorCodes.UniqueViolation => new DuplicateRecordException(),
+                    _ => ex,
+                };
             }
         }
 
