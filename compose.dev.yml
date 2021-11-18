@@ -197,4 +197,4 @@ volumes:
     name: users_db
 networks:
   gsa:
-    name: gsa
+    name: gsa-net
