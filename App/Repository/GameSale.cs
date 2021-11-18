@@ -99,5 +99,12 @@ namespace App.DB.Repository
 
             return await query.ToListAsync();
         }
+
+        public async Task<List<KeyValuePair<uint, float>>> GetYearlyTotalGameSalesInRange(uint startYear, uint endYear, CancellationToken ct)
+        {
+            var query = from g in _context.GameSales where g.Year <= endYear && g.Year >= startYear group g.GlobalSales by g.Year into gg orderby gg.Key select KeyValuePair.Create(gg.Key, gg.Sum());
+
+            return await query.ToListAsync();
+        }
     }
 }
