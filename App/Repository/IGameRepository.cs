@@ -14,5 +14,7 @@ namespace App.DB.Repository
         Task<IEnumerable<Models.GameSale>> GetGameSalesWithMoreSalesInEUThanNA(CancellationToken ct);
 
         Task<Models.GameSale?> GetGameSalesByRank(ulong rank, CancellationToken ct);
+
+        Task<List<KeyValuePair<string, List<Models.GameSale>>>> GetTopNGamesOfPlatforms(ulong n, CancellationToken ct);
     }
 }

@@ -89,5 +89,10 @@ namespace App.DB.Repository
                 return null;
             }
         }
+
+        public async Task<List<KeyValuePair<string, List<GameSale>>>> GetTopNGamesOfPlatforms(ulong n, CancellationToken ct)
+        {
+            return await _context.GameSales.AsNoTracking().Select(g => g.Platform).Distinct().Select(platform => KeyValuePair.Create(platform, _context.GameSales.AsNoTracking().Where(g => g.Platform.Equals(platform)).OrderBy(g => g.Rank).Take((int)n).ToList())).ToListAsync(ct);
+        }
     }
 }
