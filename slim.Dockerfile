@@ -22,10 +22,12 @@ WORKDIR /app
 
 COPY --from=build /app .
 
-ENV PORT=8080
+ARG PORT=8080
 
 EXPOSE ${PORT}
 
 ENV ASPNETCORE_URLS=http://+:${PORT}
 
-ENTRYPOINT ["./Coresrv"]
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+ENTRYPOINT ["./App"]
