@@ -14,8 +14,10 @@ USER ${USER}
 
 WORKDIR /home/${USER}/source
 
-ARG PORT=${PORT}
+ARG PORT=8080
 
 ENV ASPNETCORE_URLS=http://+:${PORT}/
+
+ENV ASPNETCORE_ENVIRONMENT=Development
 
 CMD [ "dotnet", "watch", "--no-hot-reload", "run", "--project", "App" ]
