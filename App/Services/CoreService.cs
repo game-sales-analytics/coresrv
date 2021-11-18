@@ -222,5 +222,15 @@ namespace App
 
             return reply;
         }
+
+        public override async Task<GetYearlyTotalGameSalesInRangeReply> GetYearlyTotalGameSalesInRange(GetYearlyTotalGameSalesInRangeRequest request, ServerCallContext context)
+        {
+            var gameSales = await _repo.GetYearlyTotalGameSalesInRange(request.StartYear, request.EndYear, context.CancellationToken);
+
+            var reply = new GetYearlyTotalGameSalesInRangeReply();
+            reply.Items.AddRange(gameSales.Select(gs => new GetYearlyTotalGameSalesInRangeReply.Types.TotalYearGameSales { TotalGameSales = gs.Value, Year = gs.Key }));
+
+            return reply;
+        }
     }
 }
