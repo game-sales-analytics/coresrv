@@ -176,11 +176,14 @@ message GetTotalPublishersGameSalesInYearsRangeRequest {
 }
 
 message GetTotalPublishersGameSalesInYearsRangeReply {
-  message PublisherTotalYearGameSales {
-    uint32 year = 1;
-    float total_game_sales = 2;
+  message PublisherTotalYearsGameSales {
+    message PublisherTotalYearGameSales {
+      uint32 year = 1;
+      float total_game_sales = 2;
+    }
+    repeated PublisherTotalYearGameSales items = 1;
   }
-  map<string, PublisherTotalYearGameSales> publisher_sales = 2;
+  map<string, PublisherTotalYearsGameSales> publisher_sales = 1;
 }
 
 message GetTotalGameSalesInYearsRangeByGenreRequest {
