@@ -20,5 +20,7 @@ namespace App.DB.Repository
         Task<List<KeyValuePair<string, float>>> GetTotalGameSalesInYearsRangeByGenre(uint startYear, uint endYear, CancellationToken ct);
 
         Task<List<KeyValuePair<uint, float>>> GetYearlyTotalGameSalesInRange(uint startYear, uint endYear, CancellationToken ct);
+
+        Task<IList<Models.GameSale>> GetGameSalesInIds(IEnumerable<string> ids, CancellationToken ct);
     }
 }

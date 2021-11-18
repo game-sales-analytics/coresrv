@@ -106,5 +106,12 @@ namespace App.DB.Repository
 
             return await query.ToListAsync();
         }
+
+        public async Task<IList<GameSale>> GetGameSalesInIds(IEnumerable<string> ids, CancellationToken ct)
+        {
+            var query = from g in _context.GameSales where ids.Contains(g.Id) select g;
+
+            return await query.ToListAsync();
+        }
     }
 }
