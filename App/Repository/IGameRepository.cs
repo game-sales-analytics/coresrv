@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using System.Threading;
 
@@ -22,5 +23,14 @@ namespace App.DB.Repository
         Task<List<KeyValuePair<uint, float>>> GetYearlyTotalGameSalesInRange(uint startYear, uint endYear, CancellationToken ct);
 
         Task<IList<Models.GameSale>> GetGameSalesInIds(IEnumerable<string> ids, CancellationToken ct);
+
+        Task<ImmutableDictionary<string, ImmutableList<TotalPublisherGameSalesInYear>>> GetTotalPublishersGameSalesInYearsRange(IEnumerable<string> publishers, uint startYear, uint endYear, CancellationToken ct);
     }
+
+    public record TotalPublisherGameSalesInYear
+    {
+        public float TotalSales { get; init; } = default!;
+
+        public uint Year { get; init; } = default!;
+    };
 }

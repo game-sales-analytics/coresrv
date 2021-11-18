@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
@@ -95,14 +96,21 @@ namespace App.DB.Repository
 
         public async Task<List<KeyValuePair<string, float>>> GetTotalGameSalesInYearsRangeByGenre(uint startYear, uint endYear, CancellationToken ct)
         {
-            var query = from g in _context.GameSales where g.Year <= endYear && g.Year >= startYear group g.GlobalSales by g.Genre into gg select KeyValuePair.Create(gg.Key, gg.Sum());
+            var query = from g in _context.GameSales
+                        where g.Year <= endYear && g.Year >= startYear
+                        group g.GlobalSales by g.Genre into gg
+                        select KeyValuePair.Create(gg.Key, gg.Sum());
 
             return await query.ToListAsync();
         }
 
         public async Task<List<KeyValuePair<uint, float>>> GetYearlyTotalGameSalesInRange(uint startYear, uint endYear, CancellationToken ct)
         {
-            var query = from g in _context.GameSales where g.Year <= endYear && g.Year >= startYear group g.GlobalSales by g.Year into gg orderby gg.Key select KeyValuePair.Create(gg.Key, gg.Sum());
+            var query = from g in _context.GameSales
+                        where g.Year <= endYear && g.Year >= startYear
+                        group g.GlobalSales by g.Year into gg
+                        orderby gg.Key ascending
+                        select KeyValuePair.Create(gg.Key, gg.Sum());
 
             return await query.ToListAsync();
         }
@@ -112,6 +120,36 @@ namespace App.DB.Repository
             var query = from g in _context.GameSales where ids.Contains(g.Id) select g;
 
             return await query.ToListAsync();
+        }
+
+        public async Task<ImmutableDictionary<string, ImmutableList<TotalPublisherGameSalesInYear>>> GetTotalPublishersGameSalesInYearsRange(IEnumerable<string> publishers, uint startYear, uint endYear, CancellationToken ct)
+        {
+            var query = from g in _context.GameSales
+                        where g.Year >= startYear && g.Year <= endYear && publishers.Contains(g.Publisher)
+                        orderby g.Year
+                        group g.GlobalSales by new { Year = g.Year, Publisher = g.Publisher } into gg
+                        select KeyValuePair.Create(new { Year = gg.Key.Year, Publisher = gg.Key.Publisher }, gg.Sum());
+
+            var result = await query.ToListAsync(ct);
+
+            var dict = new Dictionary<string, ImmutableList<TotalPublisherGameSalesInYear>>(publishers.Count());
+
+            foreach (var item in result)
+            {
+                var newRecordToBeAdded = new TotalPublisherGameSalesInYear
+                {
+                    TotalSales = item.Value,
+                    Year = item.Key.Year,
+                };
+                dict[item.Key.Publisher] = dict.ContainsKey(item.Key.Publisher) ? dict[item.Key.Publisher].Add(newRecordToBeAdded) : ImmutableList.Create(newRecordToBeAdded);
+            }
+
+            foreach (var k in dict.Keys)
+            {
+                dict[k] = dict[k].OrderBy(x => x.Year).ToImmutableList();
+            }
+
+            return dict.ToImmutableDictionary();
         }
     }
 }
