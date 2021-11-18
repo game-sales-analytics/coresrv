@@ -99,22 +99,7 @@ namespace App
         public override async Task<SearchGameSalesByNameReply> SearchGameSalesByName(SearchGameSalesByNameRequest request, ServerCallContext context)
         {
             var reply = new SearchGameSalesByNameReply { };
-            reply.Items.AddRange((await _repo.SearchGameByName(request.Name, context.CancellationToken)).Select(item => new GameSale
-            {
-                EuSales = item.EuSales,
-                Genre = item.Genre,
-                GlobalSales = item.GlobalSales,
-                Id = item.Id,
-                JpSales = item.JpSales,
-                Name = item.Name,
-                NaSales = item.NaSales,
-                OtherSales = item.OtherSales,
-                Platform = item.Platform,
-                Publisher = item.Publisher,
-                Rank = item.Rank,
-                RegisteredAt = Timestamp.FromDateTime(item.RegisteredAt),
-                Year = item.Year,
-            }));
+            reply.Items.AddRange((await _repo.SearchGameByName(request.Name, context.CancellationToken)).Select(dbToReply));
             return reply;
         }
 
@@ -129,22 +114,7 @@ namespace App
             }
             else
             {
-                games = (await _repo.GetGameSalesWithMoreSalesInEUThanNA(context.CancellationToken)).Select(item => new GameSale
-                {
-                    EuSales = item.EuSales,
-                    Genre = item.Genre,
-                    GlobalSales = item.GlobalSales,
-                    Id = item.Id,
-                    JpSales = item.JpSales,
-                    Name = item.Name,
-                    NaSales = item.NaSales,
-                    OtherSales = item.OtherSales,
-                    Platform = item.Platform,
-                    Publisher = item.Publisher,
-                    Rank = item.Rank,
-                    RegisteredAt = Timestamp.FromDateTime(item.RegisteredAt),
-                    Year = item.Year,
-                });
+                games = (await _repo.GetGameSalesWithMoreSalesInEUThanNA(context.CancellationToken)).Select(dbToReply);
             }
             var reply = new GetGameSalesWithMoreSalesInEUThanNAReply { };
             reply.Items.AddRange(games);
@@ -161,22 +131,7 @@ namespace App
 
             return new GetGameSalesByRankReply
             {
-                GameSale = new GameSale
-                {
-                    EuSales = game.EuSales,
-                    Genre = game.Genre,
-                    GlobalSales = game.GlobalSales,
-                    Id = game.Id,
-                    JpSales = game.JpSales,
-                    Name = game.Name,
-                    NaSales = game.NaSales,
-                    OtherSales = game.OtherSales,
-                    Platform = game.Platform,
-                    Publisher = game.Publisher,
-                    Rank = game.Rank,
-                    RegisteredAt = Timestamp.FromDateTime(game.RegisteredAt),
-                    Year = game.Year,
-                }
+                GameSale = dbToReply(game)
             };
         }
 
@@ -188,22 +143,7 @@ namespace App
             foreach (var platformGame in platfromGamesMap)
             {
                 var platformGames = new GetTopNGamesOfPlatformsReply.Types.GameSales { };
-                platformGames.Items.AddRange(platformGame.Value.Select(g => new GameSale
-                {
-                    EuSales = g.EuSales,
-                    Genre = g.Genre,
-                    GlobalSales = g.GlobalSales,
-                    Id = g.Id,
-                    JpSales = g.JpSales,
-                    Name = g.Name,
-                    NaSales = g.NaSales,
-                    OtherSales = g.OtherSales,
-                    Platform = g.Platform,
-                    Publisher = g.Publisher,
-                    Rank = g.Rank,
-                    RegisteredAt = Timestamp.FromDateTime(g.RegisteredAt),
-                    Year = g.Year,
-                }));
+                platformGames.Items.AddRange(platformGame.Value.Select(dbToReply));
                 reply.Group.Add(platformGame.Key, platformGames);
             }
 
@@ -231,6 +171,44 @@ namespace App
             reply.Items.AddRange(gameSales.Select(gs => new GetYearlyTotalGameSalesInRangeReply.Types.TotalYearGameSales { TotalGameSales = gs.Value, Year = gs.Key }));
 
             return reply;
+        }
+
+        public override async Task<GetGameSalesInIdsReply> GetGameSalesInIds(GetGameSalesInIdsRequest request, ServerCallContext context)
+        {
+            var gameSales = await _repo.GetGameSalesInIds(request.Ids, context.CancellationToken);
+            if (gameSales.Count != request.Ids.Count)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, $"game sales not found: {string.Join(",", request.Ids.Except(gameSales.Select(g => g.Id)).ToList())}"));
+            }
+
+            var reply = new GetGameSalesInIdsReply();
+            foreach (var item in gameSales)
+            {
+                reply.GameSales.Add(item.Id, dbToReply(item));
+            }
+
+            return reply;
+
+        }
+
+        private GameSale dbToReply(DB.Models.GameSale input)
+        {
+            return new GameSale
+            {
+                EuSales = input.EuSales,
+                Genre = input.Genre,
+                GlobalSales = input.GlobalSales,
+                Id = input.Id,
+                JpSales = input.JpSales,
+                Name = input.Name,
+                NaSales = input.NaSales,
+                OtherSales = input.OtherSales,
+                Platform = input.Platform,
+                Publisher = input.Publisher,
+                Rank = input.Rank,
+                RegisteredAt = Timestamp.FromDateTime(input.RegisteredAt),
+                Year = input.Year,
+            };
         }
     }
 }
