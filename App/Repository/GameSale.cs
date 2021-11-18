@@ -92,5 +92,12 @@ namespace App.DB.Repository
         {
             return await _context.GameSales.AsNoTracking().Select(g => g.Platform).Distinct().Select(platform => KeyValuePair.Create(platform, _context.GameSales.AsNoTracking().Where(g => g.Platform.Equals(platform)).OrderBy(g => g.Rank).Take((int)n).ToList())).ToListAsync(ct);
         }
+
+        public async Task<List<KeyValuePair<string, float>>> GetTotalGameSalesInYearsRangeByGenre(uint startYear, uint endYear, CancellationToken ct)
+        {
+            var query = from g in _context.GameSales where g.Year <= endYear && g.Year >= startYear group g.GlobalSales by g.Genre into gg select KeyValuePair.Create(gg.Key, gg.Sum());
+
+            return await query.ToListAsync();
+        }
     }
 }

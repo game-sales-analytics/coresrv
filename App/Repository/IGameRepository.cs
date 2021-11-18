@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
@@ -16,5 +17,7 @@ namespace App.DB.Repository
         Task<Models.GameSale?> GetGameSalesByRank(ulong rank, CancellationToken ct);
 
         Task<List<KeyValuePair<string, List<Models.GameSale>>>> GetTopNGamesOfPlatforms(ulong n, CancellationToken ct);
+
+        Task<List<KeyValuePair<string, float>>> GetTotalGameSalesInYearsRangeByGenre(uint startYear, uint endYear, CancellationToken ct);
     }
 }
