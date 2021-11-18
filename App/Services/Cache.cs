@@ -8,10 +8,16 @@ using Google.Protobuf.WellKnownTypes;
 using App.DB.Repository;
 using GSA.Rpc;
 
+
 namespace App
 {
     public class CacheService : ICacheService
     {
+        private static class CacheKey
+        {
+            public const string GamesWithMoreSalesInEuThanNa = "games_with_more_sales_in_eu_than_na";
+        }
+
         private readonly IGameSalesRepository gameSalesRepository;
 
         private readonly IDatabase cache;
@@ -24,7 +30,7 @@ namespace App
 
         public async Task<ReadGamesWithMoreEUSalesThanNASalesAsyncResult> ReadGamesWithMoreEUSalesThanNASalesAsync()
         {
-            var cachedResponse = await cache.StringGetAsync("games_with_more_sales_in_eu_than_na");
+            var cachedResponse = await cache.StringGetAsync(CacheKey.GamesWithMoreSalesInEuThanNa);
             if (!cachedResponse.IsNullOrEmpty)
             {
                 return new ReadGamesWithMoreEUSalesThanNASalesAsyncResult
@@ -68,7 +74,7 @@ namespace App
                 Year = item.Year,
             });
             var serializedResult = JsonSerializer.Serialize(games);
-            await cache.StringSetAsync("games_with_more_sales_in_eu_than_na", serializedResult);
+            await cache.StringSetAsync(CacheKey.GamesWithMoreSalesInEuThanNa, serializedResult);
         }
     }
 }
