@@ -150,6 +150,16 @@ namespace App
             return reply;
         }
 
+        public override async Task<GetTopNGamesOfGenreReply> GetTopNGamesOfGenre(GetTopNGamesOfGenreRequest request, ServerCallContext context)
+        {
+            var games = await _repo.GetTopNGamesOfGenre((int)request.N, request.Genre, context.CancellationToken);
+
+            var reply = new GetTopNGamesOfGenreReply();
+            reply.Items.AddRange(games.Select(dbToReply));
+
+            return reply;
+        }
+
         public override async Task<GetTotalGameSalesInYearsRangeByGenreReply> GetTotalGameSalesInYearsRangeByGenre(GetTotalGameSalesInYearsRangeByGenreRequest request, ServerCallContext context)
         {
             var gameSalesByGenres = await _repo.GetTotalGameSalesInYearsRangeByGenre(request.StartYear, request.EndYear, context.CancellationToken);
