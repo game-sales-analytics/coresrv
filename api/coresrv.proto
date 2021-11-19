@@ -123,13 +123,11 @@ message GetTopNGamesOfYearReply {
 
 message GetTopNGamesOfGenreRequest {
   uint64 n = 1;
+  string genre = 2;
 }
 
 message GetTopNGamesOfGenreReply {
-  message GameSales {
-    repeated GameSale items = 1;
-  }
-  map<string, GameSales> group = 1;
+  repeated GameSale items = 1;
 }
 
 message Get5MostSoldGamesByYearAndPlatformRequest {
