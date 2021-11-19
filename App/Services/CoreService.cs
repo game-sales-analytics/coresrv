@@ -99,7 +99,7 @@ namespace App
         public override async Task<SearchGameSalesByNameReply> SearchGameSalesByName(SearchGameSalesByNameRequest request, ServerCallContext context)
         {
             var reply = new SearchGameSalesByNameReply { };
-            reply.Items.AddRange((await _repo.SearchGameByName(request.Name, context.CancellationToken)).Select(dbToReply));
+            reply.Items.AddRange((await _repo.SearchGameByName(request.Name, context.CancellationToken)).Select(DBModelToReplyModel));
             return reply;
         }
 
@@ -114,7 +114,7 @@ namespace App
             }
             else
             {
-                games = (await _repo.GetGameSalesWithMoreSalesInEUThanNA(context.CancellationToken)).Select(dbToReply);
+                games = (await _repo.GetGameSalesWithMoreSalesInEUThanNA(context.CancellationToken)).Select(DBModelToReplyModel);
             }
             var reply = new GetGameSalesWithMoreSalesInEUThanNAReply { };
             reply.Items.AddRange(games);
@@ -131,7 +131,7 @@ namespace App
 
             return new GetGameSalesByRankReply
             {
-                GameSale = dbToReply(game)
+                GameSale = DBModelToReplyModel(game)
             };
         }
 
@@ -143,7 +143,7 @@ namespace App
             foreach (var platformGame in platfromGamesMap)
             {
                 var platformGames = new GetTopNGamesOfPlatformsReply.Types.GameSales { };
-                platformGames.Items.AddRange(platformGame.Value.Select(dbToReply));
+                platformGames.Items.AddRange(platformGame.Value.Select(DBModelToReplyModel));
                 reply.Group.Add(platformGame.Key, platformGames);
             }
 
@@ -155,7 +155,7 @@ namespace App
             var games = await _repo.GetTopNGamesOfGenre((int)request.N, request.Genre, context.CancellationToken);
 
             var reply = new GetTopNGamesOfGenreReply();
-            reply.Items.AddRange(games.Select(dbToReply));
+            reply.Items.AddRange(games.Select(DBModelToReplyModel));
 
             return reply;
         }
@@ -165,7 +165,7 @@ namespace App
             var games = await _repo.GetTopNGamesOfYear((int)request.N, request.Year, context.CancellationToken);
 
             var reply = new GetTopNGamesOfYearReply();
-            reply.Items.AddRange(games.Select(dbToReply));
+            reply.Items.AddRange(games.Select(DBModelToReplyModel));
 
             return reply;
         }
@@ -204,7 +204,7 @@ namespace App
             var reply = new GetGameSalesInIdsReply();
             foreach (var item in gameSales)
             {
-                reply.GameSales.Add(item.Id, dbToReply(item));
+                reply.GameSales.Add(item.Id, DBModelToReplyModel(item));
             }
 
             return reply;
@@ -243,12 +243,12 @@ namespace App
             );
 
             var reply = new Get5MostSoldGamesByYearAndPlatformReply();
-            reply.Items.AddRange(gameSales.Select(dbToReply));
+            reply.Items.AddRange(gameSales.Select(DBModelToReplyModel));
 
             return reply;
         }
 
-        private GameSale dbToReply(DB.Models.GameSale input)
+        private GameSale DBModelToReplyModel(DB.Models.GameSale input)
         {
             return new GameSale
             {

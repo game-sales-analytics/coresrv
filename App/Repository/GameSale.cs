@@ -127,8 +127,8 @@ namespace App.DB.Repository
             var query = from g in _context.GameSales
                         where g.Year >= startYear && g.Year <= endYear && publishers.Contains(g.Publisher)
                         orderby g.Year
-                        group g.GlobalSales by new { Year = g.Year, Publisher = g.Publisher } into gg
-                        select KeyValuePair.Create(new { Year = gg.Key.Year, Publisher = gg.Key.Publisher }, gg.Sum());
+                        group g.GlobalSales by new { g.Year, g.Publisher } into gg
+                        select KeyValuePair.Create(new { gg.Key.Year, gg.Key.Publisher }, gg.Sum());
 
             var result = await query.ToListAsync(ct);
 
