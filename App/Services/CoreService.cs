@@ -214,6 +214,20 @@ namespace App
             return reply;
         }
 
+        public override async Task<Get5MostSoldGamesByYearAndPlatformReply> Get5MostSoldGamesByYearAndPlatform(Get5MostSoldGamesByYearAndPlatformRequest request, ServerCallContext context)
+        {
+            var gameSales = await _repo.Get5MostSoldGamesByYearAndPlatform(
+                request.Year,
+                request.Platform,
+                context.CancellationToken
+            );
+
+            var reply = new Get5MostSoldGamesByYearAndPlatformReply();
+            reply.Items.AddRange(gameSales.Select(dbToReply));
+
+            return reply;
+        }
+
         private GameSale dbToReply(DB.Models.GameSale input)
         {
             return new GameSale
