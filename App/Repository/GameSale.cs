@@ -163,5 +163,17 @@ namespace App.DB.Repository
 
             return result.ToImmutableList();
         }
+
+        public async Task<ImmutableList<GameSale>> GetTopNGamesOfGenre(int limit, string genre, CancellationToken ct)
+        {
+            var result = await _context.GameSales
+                .Where(g => g.Genre.Equals(genre))
+                .Take(limit)
+                .OrderBy(g => g.Rank)
+                .Select(g => g)
+                .ToListAsync(ct);
+
+            return result.ToImmutableList();
+        }
     }
 }
