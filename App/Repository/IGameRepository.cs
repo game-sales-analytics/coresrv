@@ -25,6 +25,8 @@ namespace App.DB.Repository
         Task<IList<Models.GameSale>> GetGameSalesInIds(IEnumerable<string> ids, CancellationToken ct);
 
         Task<ImmutableDictionary<string, ImmutableList<TotalPublisherGameSalesInYear>>> GetTotalPublishersGameSalesInYearsRange(IEnumerable<string> publishers, uint startYear, uint endYear, CancellationToken ct);
+
+        Task<ImmutableList<Models.GameSale>> Get5MostSoldGamesByYearAndPlatform(uint year, string platform, CancellationToken ct);
     }
 
     public record TotalPublisherGameSalesInYear

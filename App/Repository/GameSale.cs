@@ -151,5 +151,17 @@ namespace App.DB.Repository
 
             return dict.ToImmutableDictionary();
         }
+
+        public async Task<ImmutableList<GameSale>> Get5MostSoldGamesByYearAndPlatform(uint year, string platform, CancellationToken ct)
+        {
+            var result = await _context.GameSales
+                .Where(g => g.Year.Equals(year) && g.Platform.Equals(platform))
+                .Take(5)
+                .OrderBy(g => g.Rank)
+                .Select(g => g)
+                .ToListAsync(ct);
+
+            return result.ToImmutableList();
+        }
     }
 }
