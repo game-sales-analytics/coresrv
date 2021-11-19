@@ -175,5 +175,17 @@ namespace App.DB.Repository
 
             return result.ToImmutableList();
         }
+
+        public async Task<ImmutableList<GameSale>> GetTopNGamesOfYear(int limit, uint year, CancellationToken ct)
+        {
+            var result = await _context.GameSales
+                .Where(g => g.Year.Equals(year))
+                .Take(limit)
+                .OrderBy(g => g.Rank)
+                .Select(g => g)
+                .ToListAsync(ct);
+
+            return result.ToImmutableList();
+        }
     }
 }

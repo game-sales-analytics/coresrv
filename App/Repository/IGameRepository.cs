@@ -29,6 +29,8 @@ namespace App.DB.Repository
         Task<ImmutableList<Models.GameSale>> Get5MostSoldGamesByYearAndPlatform(uint year, string platform, CancellationToken ct);
 
         Task<ImmutableList<Models.GameSale>> GetTopNGamesOfGenre(int limit, string genre, CancellationToken ct);
+
+        Task<ImmutableList<Models.GameSale>> GetTopNGamesOfYear(int limit, uint year, CancellationToken ct);
     }
 
     public record TotalPublisherGameSalesInYear
