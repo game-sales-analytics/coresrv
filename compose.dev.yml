@@ -52,7 +52,7 @@ services:
     container_name: userssrv_app
     networks:
       - gsa
-    image: docker.io/xeptore/gsa-userssrv:edge
+    image: docker.io/xeptore/gsa-userssrv:3
     depends_on:
       users_db:
         condition: service_healthy
