@@ -159,7 +159,7 @@ services:
     networks:
       - gsa
     build:
-      dockerfile: dev.Dockerfile
+      dockerfile: slim.Dockerfile
       context: .
       args:
         PORT: 8484
@@ -172,6 +172,7 @@ services:
       userssrv:
         condition: service_healthy
     environment:
+      ASPNETCORE_URLS: http://+:9494
       REDIS_HOST: cache
       REDIS_PORT: 7658
       REDIS_PASSWORD: ${REDIS_PASSWORD:?}
@@ -182,8 +183,17 @@ services:
       POSTGRESQL_PORT: 5432
       USERS_SERVICE_ADDRESS: http://userssrv:50050
     ports:
-      - "50050:8484"
+      - "50050:9494"
     restart: "no"
+    healthcheck:
+      test:
+        - CMD
+        - ./Ping
+        - http://coresrv:9494
+      interval: 5s
+      timeout: 2s
+      retries: 2
+      start_period: 5s
 volumes:
   coresrv_cache:
     name: coresrv_cache
