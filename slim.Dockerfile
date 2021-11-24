@@ -24,8 +24,6 @@ COPY --from=build /app .
 
 ARG PORT=8080
 
-EXPOSE ${PORT}
-
 ENV ASPNETCORE_URLS=http://+:${PORT}
 
 ENV ASPNETCORE_ENVIRONMENT=Production
