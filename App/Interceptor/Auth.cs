@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,8 @@ namespace App.Interceptors
 
         private readonly IAuthService authService;
 
+        private readonly IEnumerable<string> excludedMethodFullNames;
+
 
         public AuthInterceptor(
             ILogger<AuthInterceptor> _logger,
@@ -21,6 +24,7 @@ namespace App.Interceptors
         {
             logger = _logger;
             authService = _authService;
+            excludedMethodFullNames = ExcludedMethodFullNames();
         }
 
         public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
@@ -28,6 +32,11 @@ namespace App.Interceptors
           ServerCallContext context,
           UnaryServerMethod<TRequest, TResponse> continuation)
         {
+            if (excludedMethodFullNames.Contains(context.Method))
+            {
+                return await continuation(request, context);
+            }
+
             var authHeaders = context.RequestHeaders.GetAll("auth").ToList();
             if (authHeaders.Count != 1 || authHeaders.First().IsBinary)
             {
@@ -51,6 +60,23 @@ namespace App.Interceptors
                 logger.LogError(ex, "failed checking user authenticity using auth service", authHeaders);
                 throw new RpcException(new Status(StatusCode.Internal, "internal error occurred. please try again later."));
             }
+        }
+
+        private IEnumerable<string> ExcludedMethodFullNames()
+        {
+            return RawExcludedMethodNames()
+                .Select(meth => string.Join(
+                    "/",
+                    new string[] { "", GSA.Rpc.CoreService.Descriptor.FullName, meth })
+                );
+        }
+
+        private IEnumerable<string> RawExcludedMethodNames()
+        {
+            return new List<string>() {
+                nameof(App.MainService.BulkStoreGameSales),
+                nameof(App.MainService.Ping),
+            };
         }
     }
 }
