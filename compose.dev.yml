@@ -159,7 +159,7 @@ services:
     networks:
       - gsa
     build:
-      dockerfile: slim.Dockerfile
+      dockerfile: dev.Dockerfile
       context: .
       args:
         PORT: 8484
